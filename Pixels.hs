@@ -191,12 +191,3 @@ negativeAux (x:[])
 negativeAux (x:xs)
     | x == '*' = ' ' : negativeAux xs
     | x == ' ' = '*' : negativeAux xs
-
-
-
-
-
-
-
-
-
