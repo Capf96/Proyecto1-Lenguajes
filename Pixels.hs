@@ -185,9 +185,7 @@ negative (x:[]) = negativeAux x : []
 negative (x:xs) = negativeAux x : negative xs
 
 negativeAux :: String -> String
-negativeAux (x:[])
-    | x == '*' = ' ' : []
-    | x == ' ' = '*' : []
+negativeAux [] = []
 negativeAux (x:xs)
     | x == '*' = ' ' : negativeAux xs
     | x == ' ' = '*' : negativeAux xs
