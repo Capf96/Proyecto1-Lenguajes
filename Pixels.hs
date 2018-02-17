@@ -120,7 +120,7 @@ transformar (x: []) = reverse (binary 7 x)
 transformar (x:xs) = zipWith (++) (reverse (binary 7 x)) (transformar xs)
 
 
---No me agarra :C
+--No me agarra :C. crearLista tamb tiene el mismo problema.
 transformar' :: [Integer] -> Pixels
 transformar' x = foldl1 zip' (reverse [(binary 7 (head x))])
 
@@ -164,7 +164,7 @@ crearLista :: String -> [Pixels]
 crearLista (x:[]) = [font x]
 crearLista (x:xs) = [zipWith (++) (font x) (replicate 7 " ")] ++ crearLista xs
 
---Esta el mismo problema de transformar
+--Esta tiene el mismo problema de transformar
 crearLista' :: String -> [Pixels]
 crearLista' x = map (\x->zip' (font x) (replicate 7 " ")) x
 
