@@ -1,7 +1,19 @@
 module Pixels(
     Pixels,
-    fontBitmap,
-    font
+    font,
+    showPixels,
+    pixelsToString,
+    pixelListToPixels,
+    pixelListToString,
+    concatPixels,
+    messageToPixels,
+    up,
+    down,
+    lest,
+    right,
+    upsideDown,
+    backwards,
+    negative
 ) where
 
 import Data.Char (ord)
