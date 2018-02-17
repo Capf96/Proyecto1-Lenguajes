@@ -155,40 +155,41 @@ crearLista :: String -> [Pixels]
 crearLista (x:[]) = [font x]
 crearLista (x:xs) = [zipWith (++) (font x) (replicate 7 " ")] ++ crearLista xs
 
+-- No necesita
 up :: Pixels -> Pixels
 up (x:xs) = xs ++ [x]
 
+-- No necesita
 down :: Pixels -> Pixels
 down x = reverse ( up (reverse x))
 
-
+-- Done
 left :: Pixels -> Pixels
-left ((y:ys):[]) = (ys ++ [y]) : []
-left ((y:ys):xs) = (ys ++ [y]) : left xs
+left x = map (movementAux) x
 
+-- Done
 right :: Pixels -> Pixels
-right (x:[]) = reverse (rightAux (reverse x)) : []
-right (x: xs) = reverse( rightAux (reverse x)) : right xs
+right x = map (reverse . movementAux . reverse) x
 
-rightAux :: String -> String
-rightAux (x:xs) = xs ++ [x]
+movementAux :: String -> String
+movementAux (x:xs) = xs ++ [x]
 
+-- No necesita
 upsideDown :: Pixels -> Pixels
 upsideDown x = reverse x
 
+-- Done
 backwards :: Pixels -> Pixels
-backwards (x:[]) = reverse x : []
-backwards (x:xs) = reverse x : backwards xs
+backwards p = map (reverse) p
 
+-- Done
 negative :: Pixels -> Pixels
-negative (x:[]) = negativeAux x : []
-negative (x:xs) = negativeAux x : negative xs
+negative l = map (map negativeAux) l
 
-negativeAux :: String -> String
-negativeAux [] = []
-negativeAux (x:xs)
-    | x == '*' = ' ' : negativeAux xs
-    | x == ' ' = '*' : negativeAux xs
+negativeAux :: Char -> Char
+negativeAux x
+    | x == '*' = ' '
+    | x == ' ' = '*'
 
 
 
