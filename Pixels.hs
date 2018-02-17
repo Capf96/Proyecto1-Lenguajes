@@ -119,29 +119,24 @@ transformar :: [Integer] -> Pixels
 transformar (x: []) = reverse (binary 7 x)
 transformar (x:xs) = zipWith (++) (reverse (binary 7 x)) (transformar xs)
 
-binary :: Int -> Integer -> Pixels
+binary :: Int->Integer -> Pixels
 binary 0 _ = []
 binary i a
     | a `mod` 2 == 0 = " " : binary (i-1) (a `div` 2)
     | a `mod` 2 == 1 = "*" : binary (i-1) (a `div` 2)
 
+
 showPixels :: Pixels -> IO ()
-showPixels (x:[]) = do print x
-showPixels (x:xs) = do print x 
-                       showPixels xs
+showPixels x = mapM_ print x
 
 pixelsToString :: Pixels -> String
-pixelsToString (x:[]) = x
-pixelsToString (x:xs) = x ++ pixelsToString (xs)
-
+pixelsToString x = foldl1 (++) x
 
 pixelListToPixels :: [Pixels] -> Pixels
-pixelListToPixels (x:[]) = x
-pixelListToPixels (x:xs) = (x ++ [""]) ++ (pixelListToPixels xs)
+pixelListToPixels x = foldl1 (\x y-> x++[""]++y ) x
 
-pixelListToString :: [Pixels] -> String
-pixelListToString (x:[]) = pixelsToString x
-pixelListToString (x:xs) = (pixelsToString x) ++ (pixelListToString xs)
+pixelListToString' :: [Pixels] -> String
+pixelListToString' x = concat$map pixelsToString x
 
 concatPixels :: [Pixels] -> Pixels
 concatPixels (x:[]) = x
