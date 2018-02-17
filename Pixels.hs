@@ -9,7 +9,7 @@ module Pixels(
     messageToPixels,
     up,
     down,
-    lest,
+    left,
     right,
     upsideDown,
     backwards,
