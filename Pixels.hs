@@ -115,74 +115,79 @@ font a
 busqueda :: Int -> [Integer]
 busqueda pos = fontBitmap !! pos
 
+--  Aun tiene
 transformar :: [Integer] -> Pixels
 transformar (x: []) = reverse (binary 7 x)
 transformar (x:xs) = zipWith (++) (reverse (binary 7 x)) (transformar xs)
 
-binary :: Int -> Integer -> Pixels
+
+--  Revisar
+transformar' :: [Integer] -> Pixels
+transformar' x = foldl1 zip' (reverse [(binary 7 (head x))])
+
+--  Aun tiene
+binary :: Int->Integer -> Pixels
 binary 0 _ = []
 binary i a
     | a `mod` 2 == 0 = " " : binary (i-1) (a `div` 2)
     | a `mod` 2 == 1 = "*" : binary (i-1) (a `div` 2)
 
+
 showPixels :: Pixels -> IO ()
-showPixels (x:[]) = do print x
-showPixels (x:xs) = do print x 
-                       showPixels xs
+showPixels x = mapM_ print x
 
 pixelsToString :: Pixels -> String
-pixelsToString (x:[]) = x
-pixelsToString (x:xs) = x ++ pixelsToString (xs)
+pixelsToString x = foldl1 (++) (saltosLinea x)
 
+saltosLinea :: Pixels -> Pixels
+saltosLinea x = map (\x -> x ++ "\n") (take ((length x)-1) x) ++ (drop ((length x)-1) x)
 
 pixelListToPixels :: [Pixels] -> Pixels
-pixelListToPixels (x:[]) = x
-pixelListToPixels (x:xs) = (x ++ [""]) ++ (pixelListToPixels xs)
+pixelListToPixels x = foldl1 (\x y-> x++[""]++y ) x
 
 pixelListToString :: [Pixels] -> String
-pixelListToString (x:[]) = pixelsToString x
-pixelListToString (x:xs) = (pixelsToString x) ++ (pixelListToString xs)
+pixelListToString x = pixelsToString (concat x)
 
 concatPixels :: [Pixels] -> Pixels
-concatPixels (x:[]) = x
-concatPixels (x:xs) = zipWith (++) x (concatPixels xs)
+concatPixels x = foldl1 zip' x 
+ 
+zip':: [[a]] -> [[a]] -> [[a]]
+zip' x y = zipWith (++) x y
 
 messageToPixels :: String -> Pixels
 messageToPixels "" = error "El string no puede ser vacio"
 messageToPixels x = concatPixels (crearLista x)
 
+--  Aun tiene recursion directa
 crearLista :: String -> [Pixels]
 crearLista (x:[]) = [font x]
 crearLista (x:xs) = [zipWith (++) (font x) (replicate 7 " ")] ++ crearLista xs
 
--- No necesita
+--  Revisar
+crearLista' :: String -> [Pixels]
+crearLista' x = map (\x->zip' (font x) (replicate 7 " ")) x
+
 up :: Pixels -> Pixels
 up (x:xs) = xs ++ [x]
 
--- No necesita
 down :: Pixels -> Pixels
 down x = reverse ( up (reverse x))
 
--- Done
 left :: Pixels -> Pixels
 left x = map (movementAux) x
 
--- Done
 right :: Pixels -> Pixels
 right x = map (reverse . movementAux . reverse) x
 
 movementAux :: String -> String
 movementAux (x:xs) = xs ++ [x]
 
--- No necesita
 upsideDown :: Pixels -> Pixels
 upsideDown x = reverse x
 
--- Done
 backwards :: Pixels -> Pixels
 backwards p = map (reverse) p
 
--- Done
 negative :: Pixels -> Pixels
 negative l = map (map negativeAux) l
 
@@ -190,12 +195,4 @@ negativeAux :: Char -> Char
 negativeAux x
     | x == '*' = ' '
     | x == ' ' = '*'
-
-
-
-
-
-
-
-
-
+    | otherwise = error "Solo prende y apaga pixeles"
