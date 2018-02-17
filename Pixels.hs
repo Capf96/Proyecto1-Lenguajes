@@ -115,17 +115,9 @@ font a
 busqueda :: Int -> [Integer]
 busqueda pos = fontBitmap !! pos
 
---  Aun tiene
 transformar :: [Integer] -> Pixels
-transformar (x: []) = reverse (binary 7 x)
-transformar (x:xs) = zipWith (++) (reverse (binary 7 x)) (transformar xs)
+transformar x = foldl1 (zipWith (++)) (map (reverse . binary 7) x)
 
-
---  Revisar
-transformar' :: [Integer] -> Pixels
-transformar' x = foldl1 zip' (reverse [(binary 7 (head x))])
-
---  Aun tiene
 binary :: Int->Integer -> Pixels
 binary 0 _ = []
 binary i a
@@ -140,7 +132,8 @@ pixelsToString :: Pixels -> String
 pixelsToString x = foldl1 (++) (saltosLinea x)
 
 saltosLinea :: Pixels -> Pixels
-saltosLinea x = map (\x -> x ++ "\n") (take ((length x)-1) x) ++ (drop ((length x)-1) x)
+saltosLinea x = map (\x -> x ++ "\n") (take tamano x) ++ (drop tamano x)
+            where tamano = (length x)-1
 
 pixelListToPixels :: [Pixels] -> Pixels
 pixelListToPixels x = foldl1 (\x y-> x++[""]++y ) x
@@ -158,14 +151,13 @@ messageToPixels :: String -> Pixels
 messageToPixels "" = error "El string no puede ser vacio"
 messageToPixels x = concatPixels (crearLista x)
 
---  Aun tiene recursion directa
 crearLista :: String -> [Pixels]
-crearLista (x:[]) = [font x]
-crearLista (x:xs) = [zipWith (++) (font x) (replicate 7 " ")] ++ crearLista xs
+crearLista x = map agregarEspacio (take tamano lista) ++ drop tamano lista
+            where lista  = (map font x)
+                  tamano = ((length lista)-1)
 
---  Revisar
-crearLista' :: String -> [Pixels]
-crearLista' x = map (\x->zip' (font x) (replicate 7 " ")) x
+agregarEspacio :: Pixels -> Pixels
+agregarEspacio x = map (\x -> x ++ " ") x
 
 up :: Pixels -> Pixels
 up (x:xs) = xs ++ [x]
