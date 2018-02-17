@@ -119,6 +119,12 @@ transformar :: [Integer] -> Pixels
 transformar (x: []) = reverse (binary 7 x)
 transformar (x:xs) = zipWith (++) (reverse (binary 7 x)) (transformar xs)
 
+
+--No me agarra :C
+transformar' :: [Integer] -> Pixels
+transformar' x = foldl1 zip' (reverse [(binary 7 (head x))])
+
+--Lo intente e intente pero no se como 
 binary :: Int->Integer -> Pixels
 binary 0 _ = []
 binary i a
@@ -142,6 +148,14 @@ concatPixels :: [Pixels] -> Pixels
 concatPixels (x:[]) = x
 concatPixels (x:xs) = zipWith (++) x (concatPixels xs)
 
+concatPixels' :: [Pixels] -> Pixels
+concatPixels' (x:[]) = x
+concatPixels' x = foldl1 zip' x 
+
+--Simulador de zip 
+zip':: [[a]] -> [[a]] -> [[a]]
+zip' x y = zipWith (++) x y
+
 messageToPixels :: String -> Pixels
 messageToPixels "" = error "El string no puede ser vacio"
 messageToPixels x = concatPixels (crearLista x)
@@ -149,6 +163,10 @@ messageToPixels x = concatPixels (crearLista x)
 crearLista :: String -> [Pixels]
 crearLista (x:[]) = [font x]
 crearLista (x:xs) = [zipWith (++) (font x) (replicate 7 " ")] ++ crearLista xs
+
+--Esta el mismo problema de transformar
+crearLista' :: String -> [Pixels]
+crearLista' x = map (\x->zip' (font x) (replicate 7 " ")) x
 
 -- No necesita
 up :: Pixels -> Pixels
