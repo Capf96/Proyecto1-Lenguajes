@@ -1,12 +1,60 @@
+{-|
+Módulo      : Pixels
+Descripción : Representación de pixeles prendidos y apagados en terminal
+Autores     : Maria Bracamonte, 10-11147
+              Carlos Perez,     13-11089
+Souce       : https://github.com/Capf96/Proyecto1-Lenguajes
+Módulo que permite la impresión en pantalla de caracteres ASCII en una
+representación sencilla de pixeles en blanco y negro. Los pixeles se 
+componen de una lista con 7 elementos normalmente, donde cada elemento
+representa una línea de la impresión en pantalla. Cada pixel dentro de un
+tipo Pixels esta representado por un carácter, que puede ser '*' que
+representa el pixel prendido, y ' ' que representa el pixel apagado.
+A su vez, definimos una serie de funciones que trabajan con este nuevo tipo de
+dato, realizando operaciones normalmente encontrado en una pantalla de pixeles.
+También definimos funciones para transformar dicho Pixels en un String.
+-}
+
+{------------
+    Módulo
+------------}
+
 module Pixels(
     Pixels,
-    fontBitmap,
-    font
+    font,
+    showPixels,
+    pixelsToString,
+    pixelListToPixels,
+    pixelListToString,
+    concatPixels,
+    messageToPixels,
+    up,
+    down,
+    left,
+    right,
+    upsideDown,
+    backwards,
+    negative
 ) where
 
 import Data.Char (ord)
 
+{-----------------------------------------------------------------------------
+                            Nuevo tipo de dato
+-----------------------------------------------------------------------------}
+
+{-|
+El tipo de dato Pixels representa una impresión en pantalla de algún carácter 
+o String a través de pixeles prendidos y apagados representados por '*' y ' '
+respectivamente. Esta compuesto de 7 elementos normalmente, los cuales 
+representan una línea del Pixels.
+-}
+
 type Pixels = [String]
+
+{-----------------------------------------------------------------------------
+                        Lista de valores predeterminados
+-----------------------------------------------------------------------------}
 
 fontBitmap =
   [
@@ -106,100 +154,212 @@ fontBitmap =
     [ 0x00, 0x41, 0x36, 0x08, 0x00 ]  --  }
   ]
 
+{-----------------------------------------------------------------------------
+                                Funciones
+-----------------------------------------------------------------------------}
+
+{-|
+La función font toma un carácter  y este lo transforma en un tipo pixel a tipo
+Pixels, buscando el carácter  introducido en la lista fontBitmap, en donde, en
+caso de ser encontrado, trabaja sobre la lista proporcionada que contiene el 
+valor hexadecimal de los bits prendidos y apagados de cada columna del pixel;
+en caso de no ser encontrado devuelve un Pixels con todos los pixeles prendidos.
+-}
+
 font :: Char -> Pixels
 font a 
     | 0 <= pos && pos <= (length fontBitmap) = reverse (transformar (busqueda pos))
     | otherwise = transformar (replicate 7 0x7F)
   where pos = (ord a) - 32
 
+{-
+La función búsqueda recibe un entero y devuelve el elemento que se encuentra
+en esa posición de la lista fontBitmap.
+-}
+
 busqueda :: Int -> [Integer]
 busqueda pos = fontBitmap !! pos
 
+{-
+La función transformar toma una lista de enteros y los transforma en una lista
+de Strings que representaran los pixeles prendidos y apagados.
+-}
+
 transformar :: [Integer] -> Pixels
-transformar (x: []) = reverse (binary 7 x)
-transformar (x:xs) = zipWith (++) (reverse (binary 7 x)) (transformar xs)
+transformar x = foldl1 (zipWith (++)) (map (reverse . binary 7) x)
 
+{-
+La función binary recibe un número en base decimal y lo transforma a una
+representación en pixeles prendidos y apagados en un string de longitud 7.
+-}
 
---No me agarra :C. crearLista tamb tiene el mismo problema.
-transformar' :: [Integer] -> Pixels
-transformar' x = foldl1 zip' (reverse [(binary 7 (head x))])
-
---Lo intente e intente pero no se como 
-binary :: Int->Integer -> Pixels
+binary :: Int -> Integer -> Pixels
 binary 0 _ = []
 binary i a
     | a `mod` 2 == 0 = " " : binary (i-1) (a `div` 2)
     | a `mod` 2 == 1 = "*" : binary (i-1) (a `div` 2)
 
+{-|
+La función showPixels recibe un Pixels y lo imprime en pantalla de tal manera
+que forme el carácter  que esta representando.
+-}
 
 showPixels :: Pixels -> IO ()
 showPixels x = mapM_ print x
 
+{-|
+La función pixelsToString recibe un Pixels y lo transforma en un String con 
+debidos saltos de línea para su correcta representación.
+-}
+
 pixelsToString :: Pixels -> String
-pixelsToString x = foldl1 (++) x
+pixelsToString x = foldl1 (++) (saltosLinea x)
+
+{-
+La función saltosLinea es una función auxiliar de pixelsToString, la cual le 
+agrega los debidos saltos de línea a las filas de Pixels para su correcta 
+representación.
+-}
+
+saltosLinea :: Pixels -> Pixels
+saltosLinea x = map (\x -> x ++ "\n") (take tamano x) ++ (drop tamano x)
+            where tamano = (length x)-1
+
+{-|
+La función pixelListToPixels recibe una lista de Pixels y une todos los 
+elementos de esta con un string vacio de separación entre estos.
+-}
 
 pixelListToPixels :: [Pixels] -> Pixels
 pixelListToPixels x = foldl1 (\x y-> x++[""]++y ) x
 
-pixelListToString' :: [Pixels] -> String
-pixelListToString' x = concat$map pixelsToString x
+{-|
+La función pixelListToString recibe una lista de Pixels y los transforma en
+un String.
+-}
+
+pixelListToString :: [Pixels] -> String
+pixelListToString x = pixelsToString (concat x)
+
+{-|
+La función concatPixels recibe una lista de pixeles y los concatena entre 
+ellos formando un solo Pixels.
+-}
 
 concatPixels :: [Pixels] -> Pixels
-concatPixels (x:[]) = x
-concatPixels (x:xs) = zipWith (++) x (concatPixels xs)
+concatPixels x = foldl1 zip' x 
+ 
+{-
+La función zip' es una función auxiliar de concatPixels que une los pixeles de
+la lista de pixeles.
+-}
 
-concatPixels' :: [Pixels] -> Pixels
-concatPixels' (x:[]) = x
-concatPixels' x = foldl1 zip' x 
-
---Simulador de zip 
 zip':: [[a]] -> [[a]] -> [[a]]
 zip' x y = zipWith (++) x y
+
+{-|
+La función messageToPixels recibe un String y lo transforma en un elemento de
+tipo Pixels.
+-}
 
 messageToPixels :: String -> Pixels
 messageToPixels "" = error "El string no puede ser vacio"
 messageToPixels x = concatPixels (crearLista x)
 
+{-
+La función crearLista es una función auxiliar de messageToPixels que recibe el
+String y le realiza las operaciones necesarias para transformarlo a un elemento
+de tipo Pixels.
+-}
+
 crearLista :: String -> [Pixels]
-crearLista (x:[]) = [font x]
-crearLista (x:xs) = [zipWith (++) (font x) (replicate 7 " ")] ++ crearLista xs
+crearLista x = map agregarEspacio (take tamano lista) ++ drop tamano lista
+            where lista  = (map font x)
+                  tamano = ((length lista)-1)
 
---Esta tiene el mismo problema de transformar
-crearLista' :: String -> [Pixels]
-crearLista' x = map (\x->zip' (font x) (replicate 7 " ")) x
+{-
+La función agregarEspacio es una función auxiliar de crearLista que agrega un 
+espacio a cada elemento del Pixels para su debida concatenación.
+-}
 
--- No necesita
+agregarEspacio :: Pixels -> Pixels
+agregarEspacio x = map (\x -> x ++ " ") x
+
+{-|
+La función up recibe un Pixels y toma el primer elemento de este y lo coloca
+en la última posición.
+-}
+
 up :: Pixels -> Pixels
 up (x:xs) = xs ++ [x]
 
--- No necesita
+{-|
+La función down recibe un Pixels y toma el último elemento de este y lo coloca
+de primero.
+-}
+
 down :: Pixels -> Pixels
 down x = reverse ( up (reverse x))
 
--- Done
+{-|
+La función left recibe un Pixels y a toma el primer elemento de cada elemento 
+que lo compone y lo coloca de último.
+-}
+
 left :: Pixels -> Pixels
 left x = map (movementAux) x
 
--- Done
+{-|
+La función left recibe un Pixels y a toma el último elemento de cada elemento 
+que lo compone y lo coloca de primero.
+-}
+
 right :: Pixels -> Pixels
 right x = map (reverse . movementAux . reverse) x
+
+{-
+La función movementAux es una función auxiliar de left y right que toma el
+primer elemento de un String y lo coloca en la última posición.
+-}
 
 movementAux :: String -> String
 movementAux (x:xs) = xs ++ [x]
 
--- No necesita
+{-|
+La función upsideDown recibe un Pixels e intercambia todos los elementos que 
+lo componen tal que el primero es el último, el segundo el penúltimo, etc. De
+esta manera al realizar la impresión del resultado imprime el Pixels de cabeza.
+-}
+
 upsideDown :: Pixels -> Pixels
 upsideDown x = reverse x
 
--- Done
+{-|
+La función backwards recibe un Pixels y voltea la posición de cada uno de los
+elementos de sus elementos tal que el primero es el último, el segundo el 
+penúltimo, etc. De esta forma, el resultado de la impresión del Pixels 
+seria la versión espejo del Pixels original.
+-}
+
 backwards :: Pixels -> Pixels
 backwards p = map (reverse) p
 
--- Done
+{-|
+La función negative recibe un Pixels y transforma todos los pixeles prendidos 
+a apagados y todos los pixeles apagados a prendidos, es decir, todos los '*' 
+en ' ' y viceversa.
+-}
+
 negative :: Pixels -> Pixels
 negative l = map (map negativeAux) l
+
+{-
+La función negativeAux es una función auxiliar de negative que recibe un 
+carácter  '*' o ' ' y lo transforma en su opuesto.
+-}
 
 negativeAux :: Char -> Char
 negativeAux x
     | x == '*' = ' '
     | x == ' ' = '*'
+    | otherwise = error "Solo prende y apaga pixeles"
